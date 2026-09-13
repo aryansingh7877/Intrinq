@@ -35,6 +35,7 @@ export default function ServicesSection() {
   const sectionRef = useRef<HTMLElement>(null), stageRef = useRef<HTMLDivElement>(null), gridRef = useRef<HTMLDivElement>(null);
   const cardsRef = useRef<(HTMLElement | null)[]>([]), pathRef = useRef<SVGPathElement>(null), activePathRef = useRef<SVGPathElement>(null), trackerRef = useRef<SVGGElement>(null);
   const connectionRefs = useRef<(SVGGElement | null)[]>([]), headingRef = useRef<HTMLDivElement>(null), introRef = useRef<HTMLParagraphElement>(null);
+  const activeIndexRef = useRef(-1);
   const [activeIndex, setActiveIndex] = useState(-1);
 
   const buildPath = useCallback(() => {
@@ -70,9 +71,9 @@ export default function ServicesSection() {
       const length = path.getTotalLength(); gsap.set(activePath, { strokeDasharray: length, strokeDashoffset: reduced || compactLayout ? 0 : length });
       route.stops.forEach((stop, index) => { const node = connectionRefs.current[index]; if (node) gsap.set(node, { x: stop.x, y: stop.y, opacity: reduced || compactLayout ? 1 : 0, scale: reduced || compactLayout ? 1 : .5, transformOrigin: "center" }); });
       const start = path.getPointAtLength(0); gsap.set(tracker, { x: start.x, y: start.y, opacity: reduced || compactLayout ? 0 : 1 }); trigger?.kill();
-      if (reduced || compactLayout) { setActiveIndex(5); return; }
+      if (reduced || compactLayout) { activeIndexRef.current = 5; setActiveIndex(5); return; }
       trigger = ScrollTrigger.create({ id: "services-signal", trigger: section, start: "top top", end: "bottom bottom", scrub: 1.15, pin: stageRef.current, anticipatePin: 1, invalidateOnRefresh: true,
-        onUpdate: (self) => { const progress = Math.min(1, Math.max(0, self.progress)), drawn = progress * length, point = path.getPointAtLength(drawn); gsap.set(activePath, { strokeDashoffset: length - drawn }); gsap.set(tracker, { x: point.x, y: point.y }); const next = route.stops.reduce((current, stop, index) => Math.hypot(point.x - stop.x, point.y - stop.y) < 20 || progress >= (index + 1) / 7 ? Math.max(current, index) : current, -1); setActiveIndex(next); route.stops.forEach((_, index) => { const node = connectionRefs.current[index]; if (node) gsap.set(node, { opacity: index <= next ? 1 : 0, scale: index <= next ? 1 : .5 }); }); }
+        onUpdate: (self) => { const progress = Math.min(1, Math.max(0, self.progress)), drawn = progress * length, point = path.getPointAtLength(drawn); gsap.set(activePath, { strokeDashoffset: length - drawn }); gsap.set(tracker, { x: point.x, y: point.y }); const next = route.stops.reduce((current, stop, index) => Math.hypot(point.x - stop.x, point.y - stop.y) < 20 || progress >= (index + 1) / 7 ? Math.max(current, index) : current, -1); if (activeIndexRef.current !== next) { activeIndexRef.current = next; setActiveIndex(next); } route.stops.forEach((_, index) => { const node = connectionRefs.current[index]; if (node) gsap.set(node, { opacity: index <= next ? 1 : 0, scale: index <= next ? 1 : .5 }); }); }
       });
     };
     const ctx = gsap.context(() => { if (reduced) gsap.set([headingRef.current, introRef.current], { opacity: 1, y: 0 }); else { gsap.fromTo(headingRef.current, { opacity: 0, y: 26, clipPath: "inset(0 0 100% 0)" }, { opacity: 1, y: 0, clipPath: "inset(0 0 0% 0)", duration: .9, ease: "power3.out", scrollTrigger: { trigger: section, start: "top 72%" } }); gsap.fromTo(introRef.current, { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: .65, delay: .25, ease: "power2.out", scrollTrigger: { trigger: section, start: "top 72%" } }); } }, section);
