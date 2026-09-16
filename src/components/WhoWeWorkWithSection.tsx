@@ -372,7 +372,7 @@ export default function WhoWeWorkWithSection() {
       ref={sectionRef}
       id="who-we-work-with"
       aria-label="Who We Work With: Tailored Advisory Architecture"
-      className="relative w-full bg-[#071A33] text-[#F4EFE5] py-24 sm:py-32 md:py-36 px-6 sm:px-10 md:px-16 lg:px-24 transition-colors duration-700 overflow-hidden select-none"
+      className="relative w-full bg-[#071A33] text-[#F4EFE5] py-24 sm:py-32 md:py-36 px-6 sm:px-10 md:px-16 lg:px-24 transition-colors duration-700 overflow-hidden select-none scroll-mt-28"
     >
       {/* Background Architectural Luxury Grid */}
       <div

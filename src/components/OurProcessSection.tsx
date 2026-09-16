@@ -205,47 +205,25 @@ export default function OurProcessSection() {
       });
 
       // -------------------------------------------------------------
-      // 3. MOBILE VERTICAL CONTINUOUS TRAJECTORY (< 1024px)
+      // -------------------------------------------------------------
+      // 3. MOBILE VERTICAL ADVISORY JOURNEY (< 1024px)
       // -------------------------------------------------------------
       mm.add("(max-width: 1023px)", () => {
-        const mobPath = mobileActivePathRef.current;
-        if (!mobPath) return;
-
-        const pathLength = mobPath.getTotalLength();
-        gsap.set(mobPath, {
-          strokeDasharray: pathLength,
-          strokeDashoffset: pathLength,
-        });
-
-        gsap.to(mobPath, {
-          strokeDashoffset: 0,
-          ease: "none",
-          scrollTrigger: {
-            trigger: mobileSectionRef.current,
-            start: "top 70%",
-            end: "bottom 90%",
-            scrub: 1,
-          },
-        });
-
-        // Individual mobile stage card reveals
+        // Clean mobile stage card reveals with basic smooth animation
         const cards = mobileSectionRef.current?.querySelectorAll(".mobile-stage-card");
-        cards?.forEach((c, idx) => {
+        cards?.forEach((c) => {
           gsap.fromTo(
             c,
-            { opacity: idx === 0 ? 1 : 0.45, y: idx === 0 ? 0 : 18 },
+            { opacity: 0, y: 24 },
             {
               opacity: 1,
               y: 0,
-              duration: 0.5,
+              duration: 0.6,
               ease: "power2.out",
               scrollTrigger: {
                 trigger: c,
-                start: "top 85%",
-                end: "top 40%",
-                toggleActions: "play reverse play reverse",
-                onEnter: () => setActiveStageIndex(idx),
-                onEnterBack: () => setActiveStageIndex(idx),
+                start: "top 88%",
+                toggleActions: "play none none none",
               },
             }
           );
@@ -756,85 +734,51 @@ export default function OurProcessSection() {
           </p>
         </div>
 
-        {/* Vertical Journey Track with Connecting SVG Line */}
-        <div className="relative pl-8 sm:pl-10">
-          {/* Vertical Dynamic SVG Line */}
-          <svg
-            className="absolute left-2.5 sm:left-3 top-4 bottom-4 w-6 h-full pointer-events-none overflow-visible"
-            fill="none"
-          >
-            {/* Background Muted Track */}
-            <line
-              x1="6"
-              y1="0"
-              x2="6"
-              y2="100%"
-              stroke="#071A33"
-              strokeOpacity="0.12"
-              strokeWidth="2"
-              strokeDasharray="4 6"
-            />
-            {/* Active Traveling Gold Path */}
-            <path
-              ref={mobileActivePathRef}
-              d="M 6 0 L 6 2400"
-              stroke="#C89A3D"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            />
-          </svg>
-
-          {/* 5 Stages Stacked Vertically */}
-          <div className="flex flex-col space-y-10 sm:space-y-12">
-            {STAGES.map((stage, idx) => {
-              const Icon = stage.icon;
-              return (
-                <div
-                  key={`mob-${stage.id}`}
-                  className="mobile-stage-card relative bg-[#FAF7F2] border border-[#071A33]/[0.1] p-6 sm:p-7 rounded-2xl shadow-[0_8px_24px_rgba(7,26,51,0.04)]"
-                >
-                  {/* Left waypoint pin */}
-                  <div className="absolute -left-[35px] sm:-left-[43px] top-7 w-4 h-4 rounded-full bg-[#071A33] border-2 border-[#C89A3D] flex items-center justify-center shadow-sm">
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#C89A3D]" />
-                  </div>
-
-                  {/* Header Row */}
-                  <div className="flex items-center justify-between border-b border-[#071A33]/[0.08] pb-3 mb-3.5">
-                    <div className="flex items-center space-x-2">
-                      <Icon className="w-4 h-4 text-[#C89A3D]" />
-                      <span className="font-mono text-[10px] tracking-widest uppercase font-semibold text-[#8F6B2C]">
-                        {stage.tag}
-                      </span>
-                    </div>
-                    <span className="font-mono text-xs text-[#071A33]/50">
-                      {stage.stepNumber} / 05
+        {/* Vertical Journey: Clean Mobile & Tablet Process Sequence */}
+        <div className="w-full flex flex-col space-y-6 sm:space-y-8">
+          {STAGES.map((stage) => {
+            const Icon = stage.icon;
+            return (
+              <div
+                key={`mob-${stage.id}`}
+                className="mobile-stage-card relative bg-[#FAF7F2] border border-[#071A33]/[0.1] border-l-4 border-l-[#C89A3D] p-6 sm:p-7 rounded-2xl shadow-[0_6px_20px_rgba(7,26,51,0.04)]"
+              >
+                {/* Header Row */}
+                <div className="flex items-center justify-between border-b border-[#071A33]/[0.08] pb-3 mb-3.5">
+                  <div className="flex items-center space-x-2">
+                    <Icon className="w-4 h-4 text-[#C89A3D]" />
+                    <span className="font-mono text-[10px] tracking-widest uppercase font-semibold text-[#8F6B2C]">
+                      {stage.tag}
                     </span>
                   </div>
-
-                  {/* Architectural Number & Title */}
-                  <div className="flex items-baseline space-x-3 mb-2">
-                    <span className="font-serif text-4xl sm:text-5xl font-light text-[#071A33]">
-                      {stage.stepNumber}
-                    </span>
-                    <h3 className="font-serif text-2xl sm:text-3xl font-normal text-[#071A33]">
-                      {stage.title}
-                    </h3>
-                  </div>
-
-                  {/* Exact Body Copy */}
-                  <p className="font-sans text-sm sm:text-base text-[#071A33]/85 font-light leading-relaxed mb-4">
-                    {stage.body}
-                  </p>
-
-                  {/* Micro Accent Tag */}
-                  <div className="pt-3 border-t border-[#071A33]/[0.07] flex items-center justify-between font-mono text-[10px] text-[#071A33]/60 tracking-wider">
-                    <span>{stage.subTag}</span>
-                    <span className="text-[#8F6B2C] font-semibold">STAGE {stage.stepNumber}</span>
-                  </div>
+                  <span className="font-mono text-xs text-[#071A33]/50">
+                    {stage.stepNumber} / 05
+                  </span>
                 </div>
-              );
-            })}
-          </div>
+
+                {/* Architectural Number & Title */}
+                <div className="flex items-baseline space-x-3 mb-2">
+                  <span className="font-serif text-4xl sm:text-5xl font-light text-[#071A33]">
+                    {stage.stepNumber}
+                  </span>
+                  <h3 className="font-serif text-2xl sm:text-3xl font-normal text-[#071A33]">
+                    {stage.title}
+                  </h3>
+                </div>
+
+                {/* Exact Body Copy */}
+                <p className="font-sans text-sm sm:text-base text-[#071A33]/85 font-light leading-relaxed mb-4">
+                  {stage.body}
+                </p>
+
+                {/* Micro Accent Tag */}
+                <div className="pt-3 border-t border-[#071A33]/[0.07] flex items-center justify-between font-mono text-[10px] text-[#071A33]/60 tracking-wider">
+                  <span>{stage.subTag}</span>
+                  <span className="text-[#8F6B2C] font-semibold">STAGE {stage.stepNumber}</span>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>

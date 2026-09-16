@@ -48,12 +48,16 @@ export default function MarqueeSection() {
     let targetVelocity = 0;
     let currentVelocity = 0;
     let singleSetWidth = 0;
+    let hudSetWidth = 0;
 
-    // Measure one set of items
+    // Measure sets of items
     const calculateWidth = () => {
       if (trackRef.current) {
         // Track contains 3 repeated sets of 6 items (18 total). Width of 1 set is total / 3
         singleSetWidth = trackRef.current.scrollWidth / 3;
+      }
+      if (hudTrackRef.current) {
+        hudSetWidth = hudTrackRef.current.scrollWidth / 3;
       }
     };
 
@@ -99,7 +103,6 @@ export default function MarqueeSection() {
       // Reverse secondary HUD ticker
       if (hudTrackRef.current) {
         hudX += (hudSpeed + currentVelocity * 0.3);
-        const hudSetWidth = hudTrackRef.current.scrollWidth / 3;
         if (hudSetWidth > 0 && hudX >= 0) {
           hudX -= hudSetWidth;
         }

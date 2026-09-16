@@ -1,17 +1,20 @@
+import dynamic from "next/dynamic";
 import Hero from "@/components/Hero";
 import MarqueeSection from "@/components/MarqueeSection";
 import ModernBusinessSection from "@/components/ModernBusinessSection";
-import DifferenceSection from "@/components/DifferenceSection";
-import ServicesSection from "@/components/ServicesSection";
-import AiVsHumanSection from "@/components/AiVsHumanSection";
-import WhoWeWorkWithSection from "@/components/WhoWeWorkWithSection";
-import OurProcessSection from "@/components/OurProcessSection";
-import PrinciplesSection from "@/components/PrinciplesSection";
-import BlogSection from "@/components/BlogSection";
-import PrecisionStatisticsSection from "@/components/PrecisionStatisticsSection";
-import DecisionCtaSection from "@/components/DecisionCtaSection";
-import TypographicFooter from "@/components/TypographicFooter";
 import MorphingNavbar from "@/components/MorphingNavbar";
+
+// Dynamically code-split below-the-fold sections so their JS executes incrementally
+const DifferenceSection = dynamic(() => import("@/components/DifferenceSection"));
+const ServicesSection = dynamic(() => import("@/components/ServicesSection"));
+const AiVsHumanSection = dynamic(() => import("@/components/AiVsHumanSection"));
+const WhoWeWorkWithSection = dynamic(() => import("@/components/WhoWeWorkWithSection"));
+const OurProcessSection = dynamic(() => import("@/components/OurProcessSection"));
+const PrinciplesSection = dynamic(() => import("@/components/PrinciplesSection"));
+const BlogSection = dynamic(() => import("@/components/BlogSection"));
+const PrecisionStatisticsSection = dynamic(() => import("@/components/PrecisionStatisticsSection"));
+const DecisionCtaSection = dynamic(() => import("@/components/DecisionCtaSection"));
+const TypographicFooter = dynamic(() => import("@/components/TypographicFooter"));
 
 export default function Home() {
   return (

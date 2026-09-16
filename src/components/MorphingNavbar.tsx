@@ -24,6 +24,11 @@ export default function MorphingNavbar() {
   useEffect(() => {
     setIsMounted(true);
 
+    let currentHeader = false;
+    let currentNavy = false;
+    let currentNav = "";
+    let ticking = false;
+
     const updateNavState = () => {
       const aboutSection = document.getElementById("about") || document.getElementById("modern-business");
       const diffSection = document.getElementById("approach") || document.getElementById("difference");
@@ -36,65 +41,66 @@ export default function MorphingNavbar() {
 
       const aboutRect = aboutSection.getBoundingClientRect();
       const shouldBeHeader = aboutRect.top <= window.innerHeight * 0.75;
-      setIsHeader(shouldBeHeader);
+      if (shouldBeHeader !== currentHeader) {
+        currentHeader = shouldBeHeader;
+        setIsHeader(shouldBeHeader);
+      }
 
       const isDiffNavy = diffSection ? (diffSection.getBoundingClientRect().top <= 90 && diffSection.getBoundingClientRect().bottom >= 80) : false;
       const isArenaNavy = arenaSection ? (arenaSection.getBoundingClientRect().top <= 90 && arenaSection.getBoundingClientRect().bottom >= 80) : false;
       const isWhoNavy = whoSection ? (whoSection.getBoundingClientRect().top <= 90 && whoSection.getBoundingClientRect().bottom >= 80) : false;
-      setIsNavyHeader(isDiffNavy || isArenaNavy || isWhoNavy);
+      const shouldBeNavy = isDiffNavy || isArenaNavy || isWhoNavy;
+      if (shouldBeNavy !== currentNavy) {
+        currentNavy = shouldBeNavy;
+        setIsNavyHeader(shouldBeNavy);
+      }
 
       // Track active section for navbar indicator
-      if (contactSection) {
-        const contactRect = contactSection.getBoundingClientRect();
-        if (contactRect.top <= window.innerHeight * 0.6) {
-          setActiveNav("Contact");
-          return;
-        }
-      }
-
-      if (blogSection) {
+      let nextNav = "";
+      if (contactSection && contactSection.getBoundingClientRect().top <= window.innerHeight * 0.6) {
+        nextNav = "Contact";
+      } else if (blogSection) {
         const blogRect = blogSection.getBoundingClientRect();
-        if (blogRect.top <= window.innerHeight * 0.5 && blogRect.bottom >= 100) {
-          setActiveNav("Our Blog");
-          return;
-        }
+        if (blogRect.top <= window.innerHeight * 0.5 && blogRect.bottom >= 100) nextNav = "Our Blog";
       }
-
-      if (servicesSection) {
+      if (!nextNav && servicesSection) {
         const servRect = servicesSection.getBoundingClientRect();
-        if (servRect.top <= window.innerHeight * 0.5 && servRect.bottom >= 100) {
-          setActiveNav("Services");
-          return;
-        }
+        if (servRect.top <= window.innerHeight * 0.5 && servRect.bottom >= 100) nextNav = "Services";
       }
-
-      if (diffSection) {
+      if (!nextNav && diffSection) {
         const diffRect = diffSection.getBoundingClientRect();
-        if (diffRect.top <= window.innerHeight * 0.5 && diffRect.bottom >= 100) {
-          setActiveNav("Our Approach");
-          return;
-        }
+        if (diffRect.top <= window.innerHeight * 0.5 && diffRect.bottom >= 100) nextNav = "Our Approach";
       }
-
-      if (aboutSection) {
-        if (aboutRect.top <= window.innerHeight * 0.5 && aboutRect.bottom >= 100) {
-          setActiveNav("About");
-          return;
-        }
+      if (!nextNav && aboutSection) {
+        if (aboutRect.top <= window.innerHeight * 0.5 && aboutRect.bottom >= 100) nextNav = "About";
       }
-
       if (window.scrollY < 400) {
-        setActiveNav("");
+        nextNav = "";
+      }
+
+      if (nextNav !== currentNav) {
+        currentNav = nextNav;
+        setActiveNav(nextNav);
+      }
+    };
+
+    const onScrollOrResize = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          updateNavState();
+          ticking = false;
+        });
+        ticking = true;
       }
     };
 
     updateNavState();
-    window.addEventListener("scroll", updateNavState, { passive: true });
-    window.addEventListener("resize", updateNavState, { passive: true });
+    window.addEventListener("scroll", onScrollOrResize, { passive: true });
+    window.addEventListener("resize", onScrollOrResize, { passive: true });
 
     return () => {
-      window.removeEventListener("scroll", updateNavState);
-      window.removeEventListener("resize", updateNavState);
+      window.removeEventListener("scroll", onScrollOrResize);
+      window.removeEventListener("resize", onScrollOrResize);
     };
   }, []);
 

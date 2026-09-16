@@ -28,6 +28,16 @@ export default function Hero() {
   const ctaGroupRef = useRef<HTMLDivElement>(null);
   const taglineRef = useRef<HTMLParagraphElement>(null);
   const scrollIndicatorRef = useRef<HTMLDivElement>(null);
+  const [videoSrc, setVideoSrc] = useState<string>("");
+
+  useEffect(() => {
+    // Delay video src loading until after initial critical paint
+    // poster="/poster.jpg" renders immediately with zero layout shift or network contention
+    const timer = setTimeout(() => {
+      setVideoSrc("/hero_vedio.mp4");
+    }, 250);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia(
@@ -233,47 +243,43 @@ export default function Hero() {
         },
         1.72
       );
+
+      // Genuine 3D differential camera & depth parallax using quickTo
+      const isTouch = window.matchMedia("(pointer: coarse)").matches;
+      if (!isTouch && videoWrapperRef.current && contentWrapperRef.current) {
+        const xToVideo = gsap.quickTo(videoWrapperRef.current, "x", { duration: 1.4, ease: "power2.out" });
+        const yToVideo = gsap.quickTo(videoWrapperRef.current, "y", { duration: 1.4, ease: "power2.out" });
+        const xToContent = gsap.quickTo(contentWrapperRef.current, "x", { duration: 1.0, ease: "power2.out" });
+        const yToContent = gsap.quickTo(contentWrapperRef.current, "y", { duration: 1.0, ease: "power2.out" });
+
+        const handleMouseMove = (e: MouseEvent) => {
+          const { innerWidth, innerHeight } = window;
+          const mouseX = (e.clientX / innerWidth - 0.5) * 2;
+          const mouseY = (e.clientY / innerHeight - 0.5) * 2;
+
+          xToVideo(mouseX * -18);
+          yToVideo(mouseY * -12);
+          xToContent(mouseX * 8);
+          yToContent(mouseY * 6);
+        };
+
+        window.addEventListener("mousemove", handleMouseMove, { passive: true });
+        return () => {
+          window.removeEventListener("mousemove", handleMouseMove);
+        };
+      }
     }, containerRef);
-
-    // Genuine 3D differential camera & depth parallax
-    const handleMouseMove = (e: MouseEvent) => {
-      const { innerWidth, innerHeight } = window;
-      const mouseX = (e.clientX / innerWidth - 0.5) * 2;
-      const mouseY = (e.clientY / innerHeight - 0.5) * 2;
-
-      if (videoWrapperRef.current) {
-        gsap.to(videoWrapperRef.current, {
-          x: mouseX * -18,
-          y: mouseY * -12,
-          duration: 1.6,
-          ease: "power2.out",
-          overwrite: "auto",
-        });
-      }
-
-      if (contentWrapperRef.current) {
-        gsap.to(contentWrapperRef.current, {
-          x: mouseX * 8,
-          y: mouseY * 6,
-          duration: 1.2,
-          ease: "power2.out",
-          overwrite: "auto",
-        });
-      }
-    };
-
-    window.addEventListener("mousemove", handleMouseMove, { passive: true });
 
     return () => {
       ctx.revert();
-      window.removeEventListener("mousemove", handleMouseMove);
     };
   }, []);
 
   return (
     <main
+      id="hero"
       ref={containerRef}
-      className="relative w-full h-[100vh] h-[100svh] overflow-hidden bg-[#060B11] text-[#F7F4EE] select-none"
+      className="relative w-full min-h-[100svh] h-auto lg:h-[100vh] lg:overflow-hidden bg-[#060B11] text-[#F7F4EE] select-none"
     >
       {/* ========================================================== */}
       {/* 1. CINEMATIC VIDEO BACKGROUND LAYER                       */}
@@ -288,11 +294,11 @@ export default function Hero() {
           muted
           loop
           playsInline
+          preload="metadata"
           poster="/poster.jpg"
           className="w-full h-full object-cover object-center transform-gpu"
         >
-          <source src="/hero_vedio.mp4" type="video/mp4" />
-          <source src="/hero_video.mp4" type="video/mp4" />
+          {videoSrc && <source src={videoSrc} type="video/mp4" />}
         </video>
       </div>
 
@@ -374,7 +380,7 @@ export default function Hero() {
       {/* ========================================================== */}
       {/* 4. MAIN HERO CONTENT (Guaranteed clearance below logo)     */}
       {/* ========================================================== */}
-      <div className="relative z-20 w-full h-full flex flex-col justify-start px-6 sm:px-10 md:px-16 lg:px-20 pt-28 sm:pt-32 md:pt-36 lg:pt-40 pb-28">
+      <div className="relative z-20 w-full h-full flex flex-col justify-start px-6 sm:px-10 md:px-16 lg:px-20 pt-28 sm:pt-32 md:pt-36 lg:pt-40 pb-36 sm:pb-32 md:pb-28">
         <div ref={contentWrapperRef} className="max-w-xl md:max-w-2xl lg:max-w-[740px] will-change-transform">
           {/* Eyebrow with gold accent line */}
           <div className="flex items-center space-x-3.5 mb-4 sm:mb-5 md:mb-6">

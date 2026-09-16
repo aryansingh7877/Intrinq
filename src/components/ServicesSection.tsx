@@ -76,17 +76,47 @@ export default function ServicesSection() {
         onUpdate: (self) => { const progress = Math.min(1, Math.max(0, self.progress)), drawn = progress * length, point = path.getPointAtLength(drawn); gsap.set(activePath, { strokeDashoffset: length - drawn }); gsap.set(tracker, { x: point.x, y: point.y }); const next = route.stops.reduce((current, stop, index) => Math.hypot(point.x - stop.x, point.y - stop.y) < 20 || progress >= (index + 1) / 7 ? Math.max(current, index) : current, -1); if (activeIndexRef.current !== next) { activeIndexRef.current = next; setActiveIndex(next); } route.stops.forEach((_, index) => { const node = connectionRefs.current[index]; if (node) gsap.set(node, { opacity: index <= next ? 1 : 0, scale: index <= next ? 1 : .5 }); }); }
       });
     };
-    const ctx = gsap.context(() => { if (reduced) gsap.set([headingRef.current, introRef.current], { opacity: 1, y: 0 }); else { gsap.fromTo(headingRef.current, { opacity: 0, y: 26, clipPath: "inset(0 0 100% 0)" }, { opacity: 1, y: 0, clipPath: "inset(0 0 0% 0)", duration: .9, ease: "power3.out", scrollTrigger: { trigger: section, start: "top 72%" } }); gsap.fromTo(introRef.current, { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: .65, delay: .25, ease: "power2.out", scrollTrigger: { trigger: section, start: "top 72%" } }); } }, section);
+    const ctx = gsap.context(() => {
+      if (reduced) {
+        gsap.set([headingRef.current, introRef.current], { opacity: 1, y: 0 });
+      } else {
+        gsap.fromTo(headingRef.current, { opacity: 0, y: 26, clipPath: "inset(0 0 100% 0)" }, { opacity: 1, y: 0, clipPath: "inset(0 0 0% 0)", duration: .9, ease: "power3.out", scrollTrigger: { trigger: section, start: "top 72%" } });
+        gsap.fromTo(introRef.current, { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: .65, delay: .25, ease: "power2.out", scrollTrigger: { trigger: section, start: "top 72%" } });
+        
+        // Basic subtle mobile card stagger reveal
+        const mm = gsap.matchMedia();
+        mm.add("(max-width: 1023px)", () => {
+          const cards = cardsRef.current.filter(Boolean);
+          if (cards.length > 0) {
+            gsap.fromTo(
+              cards,
+              { opacity: 0, y: 20 },
+              {
+                opacity: 1,
+                y: 0,
+                duration: 0.5,
+                stagger: 0.08,
+                ease: "power2.out",
+                scrollTrigger: {
+                  trigger: gridRef.current,
+                  start: "top 85%",
+                },
+              }
+            );
+          }
+        });
+      }
+    }, section);
     const timer = window.setTimeout(() => { initialise(); ScrollTrigger.refresh(); }, 80), observer = new ResizeObserver(() => { initialise(); ScrollTrigger.refresh(); }); observer.observe(grid);
     return () => { window.clearTimeout(timer); observer.disconnect(); trigger?.kill(); ctx.revert(); };
   }, [buildPath]);
 
-  return <section ref={sectionRef} id="services" aria-label="Comprehensive Integrated Advisory Services" className="relative h-auto lg:h-[175vh] bg-[#F5F1E8] text-[#071A33] scroll-mt-24">
+  return <section ref={sectionRef} id="services" aria-label="Comprehensive Integrated Advisory Services" className="relative h-auto lg:h-[175vh] bg-[#F5F1E8] text-[#071A33] scroll-mt-28">
     <div className="absolute inset-0 pointer-events-none opacity-[.035]" style={{ backgroundImage: "linear-gradient(rgba(7,26,51,.38) 1px,transparent 1px),linear-gradient(90deg,rgba(7,26,51,.38) 1px,transparent 1px)", backgroundSize: "64px 64px" }} />
-    <div ref={stageRef} className="relative flex min-h-screen items-center overflow-visible px-5 py-16 sm:px-8 lg:h-screen lg:overflow-hidden lg:px-14 lg:py-8 xl:px-20">
-      <div className="pointer-events-none absolute -right-24 top-8 h-[32rem] w-[32rem] opacity-[.045]"><svg viewBox="0 0 500 500" className="h-full w-full fill-none stroke-[#071A33]" strokeWidth=".7"><circle cx="250" cy="250" r="214" strokeDasharray="3 7" /><circle cx="250" cy="250" r="154" /><circle cx="250" cy="250" r="94" strokeDasharray="2 5" /><path d="M20 250H480M250 20V480M97 97L403 403M403 97L97 403" /></svg></div>
+    <div ref={stageRef} className="relative flex min-h-screen items-center overflow-visible px-5 pt-28 pb-16 sm:px-8 sm:pt-32 sm:pb-20 lg:h-screen lg:overflow-hidden lg:px-14 lg:py-8 xl:px-20">
+      <div className="hidden lg:block pointer-events-none absolute -right-24 top-8 h-[32rem] w-[32rem] opacity-[.045]"><svg viewBox="0 0 500 500" className="h-full w-full fill-none stroke-[#071A33]" strokeWidth=".7"><circle cx="250" cy="250" r="214" strokeDasharray="3 7" /><circle cx="250" cy="250" r="154" /><circle cx="250" cy="250" r="94" strokeDasharray="2 5" /><path d="M20 250H480M250 20V480M97 97L403 403M403 97L97 403" /></svg></div>
       <div className="relative z-10 mx-auto w-full max-w-7xl"><div className="mb-9 grid grid-cols-1 items-end gap-7 lg:mb-10 lg:grid-cols-12 lg:gap-12"><div ref={headingRef} className="lg:col-span-7"><div className="mb-4 flex items-center gap-3"><span className="h-px w-8 bg-[#C89A3D]" /><span className="font-mono text-[10px] font-semibold tracking-[.24em] text-[#8F6B2C]">OUR SERVICES</span></div><h2 className="overflow-visible pb-[.13em] font-serif text-[clamp(2.55rem,5vw,4.35rem)] leading-[1.06] tracking-[-.035em]"><span className="block">Comprehensive advice.</span><span className="mt-1 block italic text-[#C89A3D]">Integrated for impact.</span></h2></div><p ref={introRef} className="max-w-md text-[15px] font-light leading-relaxed text-[#071A33]/70 lg:col-span-5 lg:pb-1">From financial strategy to tax and compliance, we bring every piece together — so you can focus on building what matters.</p></div>
-        <div ref={gridRef} className="relative"><svg aria-hidden="true" className="pointer-events-none absolute inset-0 z-20 h-full w-full overflow-visible" preserveAspectRatio="none"><defs><filter id="service-node-glow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="2" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter></defs><path ref={pathRef} fill="none" stroke="#B9AA91" strokeOpacity=".4" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" /><path ref={activePathRef} fill="none" stroke="#D4B573" strokeOpacity=".82" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />{SERVICES.map((service, index) => <g key={service.id} ref={(el) => { connectionRefs.current[index] = el; }} filter="url(#service-node-glow)"><circle r="8" fill="#F5F1E8" stroke="#D4B573" strokeOpacity=".28" /><circle r="3.2" fill="#D4B573" /><circle r="1" fill="#071A33" /></g>)}<g ref={trackerRef} filter="url(#service-node-glow)"><circle r="6" fill="#F5F1E8" stroke="#D4B573" strokeWidth="1.4" /><circle r="2.2" fill="#D4B573" /></g></svg>
+        <div ref={gridRef} className="relative"><svg aria-hidden="true" className="hidden lg:block pointer-events-none absolute inset-0 z-20 h-full w-full overflow-visible" preserveAspectRatio="none"><defs><filter id="service-node-glow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="2" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter></defs><path ref={pathRef} fill="none" stroke="#B9AA91" strokeOpacity=".4" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" /><path ref={activePathRef} fill="none" stroke="#D4B573" strokeOpacity=".82" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />{SERVICES.map((service, index) => <g key={service.id} ref={(el) => { connectionRefs.current[index] = el; }} filter="url(#service-node-glow)"><circle r="8" fill="#F5F1E8" stroke="#D4B573" strokeOpacity=".28" /><circle r="3.2" fill="#D4B573" /><circle r="1" fill="#071A33" /></g>)}<g ref={trackerRef} filter="url(#service-node-glow)"><circle r="6" fill="#F5F1E8" stroke="#D4B573" strokeWidth="1.4" /><circle r="2.2" fill="#D4B573" /></g></svg>
           <div className="relative z-10 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 lg:gap-x-7 lg:gap-y-6">{SERVICES.map((service, index) => { const Icon = service.icon, current = activeIndex === index, reached = activeIndex >= index; return <article key={service.id} ref={(el) => { cardsRef.current[index] = el; }} className={`group relative min-h-[224px] rounded-[14px] border bg-[#FBF9F4] px-7 py-7 transition-[transform,border-color,background-color,box-shadow] duration-500 hover:-translate-y-[3px] sm:px-8 ${current ? "border-[#C89A3D]/80 bg-white shadow-[0_12px_28px_rgba(7,26,51,.055)]" : reached ? "border-[#B8AF9F]" : "border-[#DDD5C6]"}`}><span className={`absolute left-0 top-7 h-9 w-[2px] bg-[#C89A3D] transition-opacity duration-500 ${current ? "opacity-100" : "opacity-0"}`} /><div className="mb-7 flex items-center justify-between border-b border-[#DDD5C6]/80 pb-5"><span className={`grid h-9 w-9 place-items-center transition-colors duration-500 ${current ? "text-[#C89A3D]" : "text-[#071A33]/65"}`}><Icon className="h-[19px] w-[19px]" /></span><span className={`font-mono text-[11px] tracking-[.12em] ${reached ? "text-[#8F6B2C]" : "text-[#071A33]/45"}`}>{service.id}</span></div><p className={`mb-3 font-mono text-[9px] tracking-[.2em] ${current ? "text-[#C89A3D]" : "text-[#071A33]/48"}`}>{service.tag}</p><h3 className={`mb-3 font-serif text-[25px] leading-none tracking-[-.025em] transition-transform duration-500 ${current ? "-translate-y-1" : ""}`}>{service.title}</h3><p className={`max-w-[34ch] text-[13.5px] font-light leading-relaxed ${current ? "text-[#071A33]/80" : "text-[#071A33]/62"}`}>{service.description}</p></article>; })}</div>
         </div></div>
       </div>

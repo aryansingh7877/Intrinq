@@ -33,11 +33,16 @@ export const viewport: Viewport = {
   themeColor: "#060B11",
 };
 
+import dynamic from "next/dynamic";
 import SmoothScroll from "@/components/motion/SmoothScroll";
-import ScrollVelocityManager from "@/components/motion/ScrollVelocityManager";
-import WebGLWorld from "@/components/motion/WebGLWorld";
-import CinematicLoader from "@/components/motion/CinematicLoader";
-import MagneticCursor from "@/components/motion/MagneticCursor";
+
+const WebGLWorld = dynamic(() => import("@/components/motion/WebGLWorld"), {
+  ssr: false,
+});
+
+const MagneticCursor = dynamic(() => import("@/components/motion/MagneticCursor"), {
+  ssr: false,
+});
 
 export default function RootLayout({
   children,
@@ -48,21 +53,16 @@ export default function RootLayout({
     <html lang="en" className={`${cormorant.variable} ${plusJakarta.variable}`}>
       <body className="bg-[#060B11] text-[#F7F4EE] antialiased selection:bg-gold-500/30 selection:text-white overflow-x-hidden">
         <SmoothScroll>
-          <ScrollVelocityManager>
             {/* 1. Global WebGL World Background Canvas */}
             <WebGLWorld />
 
-            {/* 2. AAA Game Boot Cinematic Loader Sequence */}
-            <CinematicLoader />
-
-            {/* 3. Luxury Precision Magnetic Cursor */}
+            {/* 2. Luxury Precision Magnetic Cursor */}
             <MagneticCursor />
 
-            {/* 4. Core Website Content Hierarchy */}
+            {/* 3. Core Website Content Hierarchy */}
             <div className="relative z-10 w-full min-h-screen">
               {children}
             </div>
-          </ScrollVelocityManager>
         </SmoothScroll>
       </body>
     </html>

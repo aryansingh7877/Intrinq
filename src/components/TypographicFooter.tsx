@@ -65,7 +65,6 @@ export default function TypographicFooter() {
   // Interaction states
   const [copied, setCopied] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const [maskPos, setMaskPos] = useState({ x: -200, y: -200 });
 
   // Handle email copy
   const handleCopyEmail = useCallback((e: React.MouseEvent) => {
@@ -83,9 +82,13 @@ export default function TypographicFooter() {
   const handleMobileTap = () => {
     setIsHovered(true);
     // Center reveal temporarily on mobile tap
-    if (wordContainerRef.current) {
+    if (wordContainerRef.current && goldLayerRef.current) {
       const rect = wordContainerRef.current.getBoundingClientRect();
-      setMaskPos({ x: rect.width / 2, y: rect.height / 2 });
+      const x = rect.width / 2;
+      const y = rect.height / 2;
+      const gradient = `radial-gradient(circle 120px at ${x}px ${y}px, black 30%, rgba(0,0,0,0.6) 65%, transparent 100%)`;
+      goldLayerRef.current.style.webkitMaskImage = gradient;
+      goldLayerRef.current.style.maskImage = gradient;
     }
     setTimeout(() => {
       setIsHovered(false);
@@ -178,15 +181,23 @@ export default function TypographicFooter() {
 
         // Smooth cursor interpolation (0.18s lag for luxury tactile feel)
         const pos = { x: -200, y: -200 };
+        const updateMask = () => {
+          if (goldLayerRef.current) {
+            const gradient = `radial-gradient(circle 120px at ${pos.x}px ${pos.y}px, black 30%, rgba(0,0,0,0.6) 65%, transparent 100%)`;
+            goldLayerRef.current.style.webkitMaskImage = gradient;
+            goldLayerRef.current.style.maskImage = gradient;
+          }
+        };
+
         const xTo = gsap.quickTo(pos, "x", {
           duration: 0.22,
           ease: "power2.out",
-          onUpdate: () => setMaskPos({ x: pos.x, y: pos.y }),
+          onUpdate: updateMask,
         });
         const yTo = gsap.quickTo(pos, "y", {
           duration: 0.22,
           ease: "power2.out",
-          onUpdate: () => setMaskPos({ x: pos.x, y: pos.y }),
+          onUpdate: updateMask,
         });
 
         const handleMouseMove = (e: MouseEvent) => {
@@ -201,7 +212,7 @@ export default function TypographicFooter() {
           const rect = wordEl.getBoundingClientRect();
           pos.x = e.clientX - rect.left;
           pos.y = e.clientY - rect.top;
-          setMaskPos({ x: pos.x, y: pos.y });
+          updateMask();
           setIsHovered(true);
         };
 
@@ -371,8 +382,10 @@ export default function TypographicFooter() {
               ref={goldLayerRef}
               className="absolute inset-0 pointer-events-none flex items-baseline justify-between"
               style={{
-                WebkitMaskImage: `radial-gradient(circle 120px at ${maskPos.x}px ${maskPos.y}px, black 30%, rgba(0,0,0,0.6) 65%, transparent 100%)`,
-                maskImage: `radial-gradient(circle 120px at ${maskPos.x}px ${maskPos.y}px, black 30%, rgba(0,0,0,0.6) 65%, transparent 100%)`,
+                WebkitMaskImage:
+                  "radial-gradient(circle 120px at -200px -200px, black 30%, rgba(0,0,0,0.6) 65%, transparent 100%)",
+                maskImage:
+                  "radial-gradient(circle 120px at -200px -200px, black 30%, rgba(0,0,0,0.6) 65%, transparent 100%)",
                 opacity: isHovered ? 1 : 0,
                 transition: isHovered
                   ? "opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1)"

@@ -101,7 +101,6 @@ export default function PrinciplesSection() {
 
   // Active state
   const [activeIndex, setActiveIndex] = useState<number>(0);
-  const [scrollProgress, setScrollProgress] = useState<number>(0);
   const previousIndexRef = useRef<number>(0);
 
   // Generate 60 minute tick marks
@@ -160,150 +159,171 @@ export default function PrinciplesSection() {
         return;
       }
 
-      // ── 1. SECTION ENTRANCE ASSEMBLY ANIMATION ─────────────────────
-      const enterTl = gsap.timeline({
-        scrollTrigger: {
+      const mm = gsap.matchMedia();
+
+      // ── DESKTOP ONLY: PINNED HAUTE HORLOGERIE MECHANICAL WATCH FACE (>= 1024px) ──
+      mm.add("(min-width: 1024px)", () => {
+        // 1. SECTION ENTRANCE ASSEMBLY ANIMATION
+        const enterTl = gsap.timeline({
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top 80%",
+            toggleActions: "play none none reverse",
+          },
+        });
+
+        // Heading unmasking
+        enterTl.fromTo(
+          eyebrowRef.current,
+          { opacity: 0, y: 12 },
+          { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" },
+          0
+        );
+
+        enterTl.fromTo(
+          headingRef.current,
+          { clipPath: "inset(0 100% 0 0)", opacity: 0 },
+          { clipPath: "inset(0 0% 0 0)", opacity: 1, duration: 0.8, ease: "power3.out" },
+          0.1
+        );
+
+        // Outer bezel draws clockwise
+        if (outerBezelRef.current) {
+          const circumference = 2 * Math.PI * 378;
+          enterTl.fromTo(
+            outerBezelRef.current,
+            { strokeDasharray: circumference, strokeDashoffset: circumference },
+            { strokeDashoffset: 0, duration: 1.2, ease: "power2.out" },
+            0.2
+          );
+        }
+
+        // Secondary bezel and inner rings fade
+        if (secondaryBezelRef.current && innerRingsGroupRef.current) {
+          enterTl.fromTo(
+            [secondaryBezelRef.current, innerRingsGroupRef.current],
+            { opacity: 0 },
+            { opacity: 1, duration: 0.9, ease: "power2.out" },
+            0.4
+          );
+        }
+
+        // Minute ticks appear
+        if (ticksGroupRef.current) {
+          enterTl.fromTo(
+            ticksGroupRef.current,
+            { opacity: 0 },
+            { opacity: 1, duration: 0.8, ease: "power1.out" },
+            0.5
+          );
+        }
+
+        // Roman numerals fade in softly
+        if (romanGroupRef.current) {
+          enterTl.fromTo(
+            romanGroupRef.current,
+            { opacity: 0 },
+            { opacity: 1, duration: 0.8, ease: "power2.out" },
+            0.6
+          );
+        }
+
+        // Center pin appears
+        if (centerPinRef.current) {
+          enterTl.fromTo(
+            centerPinRef.current,
+            { opacity: 0 },
+            { opacity: 1, duration: 0.5, ease: "power2.out" },
+            0.7
+          );
+        }
+
+        // Watch hand smoothly fades into initial position at 0° (Principle 01)
+        if (handGroupRef.current) {
+          handGroupRef.current.setAttribute("transform", "rotate(0)");
+          enterTl.fromTo(
+            handGroupRef.current,
+            { opacity: 0 },
+            { opacity: 1, duration: 0.6, ease: "power2.out" },
+            0.65
+          );
+        }
+
+        // 2. PINNED MECHANICAL SCROLL CONTROLLER (180vh–200vh)
+        // Hand rotates from 0° -> 288° precisely matching principles 01 -> 05
+        let currentStationIdx = -1;
+        ScrollTrigger.create({
+          id: "principles-horology-pin",
           trigger: sectionRef.current,
-          start: "top 80%",
-          toggleActions: "play none none reverse",
-        },
+          start: "top top",
+          end: "+=190%",
+          pin: pinContainerRef.current,
+          pinSpacing: true,
+          scrub: 0.8,
+          invalidateOnRefresh: true,
+          onUpdate: (self) => {
+            const progress = self.progress;
+            const targetRotation = progress * 288;
+
+            if (handGroupRef.current) {
+              handGroupRef.current.setAttribute("transform", `rotate(${targetRotation})`);
+              handGroupRef.current.style.opacity = "1";
+            }
+
+            if (rotatingInnerDialRef.current) {
+              rotatingInnerDialRef.current.setAttribute(
+                "transform",
+                `rotate(${progress * 12})`
+              );
+            }
+
+            if (finalGoldBurstRef.current) {
+              if (progress >= 0.92) {
+                const burstP = (progress - 0.92) / 0.08;
+                finalGoldBurstRef.current.setAttribute("opacity", `${burstP * 0.7}`);
+                finalGoldBurstRef.current.setAttribute("r", `${380 + burstP * 16}`);
+              } else {
+                finalGoldBurstRef.current.setAttribute("opacity", "0");
+                finalGoldBurstRef.current.setAttribute("r", "380");
+              }
+            }
+
+            let idx = 0;
+            if (progress < 0.18) idx = 0;
+            else if (progress < 0.38) idx = 1;
+            else if (progress < 0.62) idx = 2;
+            else if (progress < 0.85) idx = 3;
+            else idx = 4;
+
+            if (idx !== currentStationIdx) {
+              currentStationIdx = idx;
+              setActiveIndex(idx);
+            }
+          },
+        });
       });
 
-      // Heading unmasking
-      enterTl.fromTo(
-        eyebrowRef.current,
-        { opacity: 0, y: 12 },
-        { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" },
-        0
-      );
-
-      enterTl.fromTo(
-        headingRef.current,
-        { clipPath: "inset(0 100% 0 0)", opacity: 0 },
-        { clipPath: "inset(0 0% 0 0)", opacity: 1, duration: 0.8, ease: "power3.out" },
-        0.1
-      );
-
-      // Outer bezel draws clockwise
-      if (outerBezelRef.current) {
-        const circumference = 2 * Math.PI * 378;
-        enterTl.fromTo(
-          outerBezelRef.current,
-          { strokeDasharray: circumference, strokeDashoffset: circumference },
-          { strokeDashoffset: 0, duration: 1.2, ease: "power2.out" },
-          0.2
-        );
-      }
-
-      // Secondary bezel and inner rings fade
-      if (secondaryBezelRef.current && innerRingsGroupRef.current) {
-        enterTl.fromTo(
-          [secondaryBezelRef.current, innerRingsGroupRef.current],
-          { opacity: 0 },
-          { opacity: 1, duration: 0.9, ease: "power2.out" },
-          0.4
-        );
-      }
-
-      // Minute ticks appear
-      if (ticksGroupRef.current) {
-        enterTl.fromTo(
-          ticksGroupRef.current,
-          { opacity: 0 },
-          { opacity: 1, duration: 0.8, ease: "power1.out" },
-          0.5
-        );
-      }
-
-      // Roman numerals fade in softly
-      if (romanGroupRef.current) {
-        enterTl.fromTo(
-          romanGroupRef.current,
-          { opacity: 0 },
-          { opacity: 1, duration: 0.8, ease: "power2.out" },
-          0.6
-        );
-      }
-
-      // Center pin appears
-      if (centerPinRef.current) {
-        enterTl.fromTo(
-          centerPinRef.current,
-          { opacity: 0 },
-          { opacity: 1, duration: 0.5, ease: "power2.out" },
-          0.7
-        );
-      }
-
-      // Watch hand smoothly fades into initial position at 0° (Principle 01)
-      if (handGroupRef.current) {
-        handGroupRef.current.setAttribute("transform", "rotate(0)");
-        enterTl.fromTo(
-          handGroupRef.current,
-          { opacity: 0 },
-          { opacity: 1, duration: 0.6, ease: "power2.out" },
-          0.65
-        );
-      }
-
-      // ── 2. PINNED MECHANICAL SCROLL CONTROLLER (180vh–200vh) ──────
-      // Hand rotates from 0° -> 288° precisely matching principles 01 -> 05
-      ScrollTrigger.create({
-        id: "principles-horology-pin",
-        trigger: sectionRef.current,
-        start: "top top",
-        end: "+=190%",
-        pin: pinContainerRef.current,
-        pinSpacing: true, // Guarantees zero blank gaps before or after
-        scrub: 0.8,
-        invalidateOnRefresh: true,
-        onUpdate: (self) => {
-          const progress = self.progress;
-          setScrollProgress(Math.round(progress * 100));
-
-          // Calculate hand angle: 0° to 288° smoothly
-          const targetRotation = progress * 288;
-
-          if (handGroupRef.current) {
-            handGroupRef.current.setAttribute("transform", `rotate(${targetRotation})`);
-            handGroupRef.current.style.opacity = "1";
-          }
-
-          // Subtle differential micro-rotation on inner dial background
-          if (rotatingInnerDialRef.current) {
-            rotatingInnerDialRef.current.setAttribute(
-              "transform",
-              `rotate(${progress * 12})`
-            );
-          }
-
-          // Final expansion ring at 100% completion (Principle 05)
-          if (finalGoldBurstRef.current) {
-            if (progress >= 0.92) {
-              const burstP = (progress - 0.92) / 0.08;
-              finalGoldBurstRef.current.setAttribute("opacity", `${burstP * 0.7}`);
-              finalGoldBurstRef.current.setAttribute("r", `${380 + burstP * 16}`);
-            } else {
-              finalGoldBurstRef.current.setAttribute("opacity", "0");
-              finalGoldBurstRef.current.setAttribute("r", "380");
+      // ── MOBILE & TABLET: SIMPLE CLEAN SCROLL REVEAL (< 1024px) ──────────
+      mm.add("(max-width: 1023px)", () => {
+        const mobileCards = sectionRef.current?.querySelectorAll(".mobile-principle-card");
+        if (mobileCards && mobileCards.length > 0) {
+          gsap.fromTo(
+            mobileCards,
+            { opacity: 0, y: 24 },
+            {
+              opacity: 1,
+              y: 0,
+              duration: 0.6,
+              stagger: 0.12,
+              ease: "power2.out",
+              scrollTrigger: {
+                trigger: sectionRef.current?.querySelector(".mobile-principles-container"),
+                start: "top 85%",
+                toggleActions: "play none none none",
+              },
             }
-          }
-
-          // Determine active principle index (5 discrete stations: 0, 1, 2, 3, 4)
-          // 0%: 01 (Truth)
-          // 25%: 02 (Clarity)
-          // 50%: 03 (Judgment)
-          // 75%: 04 (Discipline)
-          // 100%: 05 (Compounds)
-          let idx = 0;
-          if (progress < 0.18) idx = 0;
-          else if (progress < 0.38) idx = 1;
-          else if (progress < 0.62) idx = 2;
-          else if (progress < 0.85) idx = 3;
-          else idx = 4;
-
-          setActiveIndex(idx);
-        },
+          );
+        }
       });
     }, sectionRef);
 
@@ -328,7 +348,7 @@ export default function PrinciplesSection() {
     <section
       ref={sectionRef}
       id="principles"
-      className="relative w-full bg-[#F5F1E8] text-[#071A33] overflow-hidden select-none"
+      className="relative w-full bg-[#F5F1E8] text-[#071A33] overflow-hidden select-none scroll-mt-28"
       aria-label="The IntrinsQ Principles — Haute Horlogerie Interaction"
     >
       {/* ── Background: Subtle Technical Blueprint Paper Texture ──── */}
@@ -348,10 +368,10 @@ export default function PrinciplesSection() {
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[980px] h-[980px] rounded-full border border-[#071A33]/[0.03] pointer-events-none" />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1240px] h-[1240px] rounded-full border border-[#071A33]/[0.02] pointer-events-none" />
 
-      {/* ── PINNED HOROLOGY STAGE (100vh Viewport Experience) ────── */}
+      {/* ── PINNED HOROLOGY STAGE (Desktop >= 1024px Viewport Experience) ────── */}
       <div
         ref={pinContainerRef}
-        className="relative w-full h-screen flex flex-col justify-between items-center px-5 sm:px-10 lg:px-16 pt-24 sm:pt-28 lg:pt-16 pb-4 sm:pb-6 z-10"
+        className="hidden lg:flex relative w-full h-screen flex-col justify-between items-center px-5 sm:px-10 lg:px-16 pt-24 sm:pt-28 lg:pt-16 pb-4 sm:pb-6 z-10"
       >
         {/* ── TOP HEADER BAR: Eyebrow + Heading + Quick Dial Waypoints */}
         <div className="w-full max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-end justify-between gap-3 sm:gap-4 border-b border-[#071A33]/[0.08] pb-3 sm:pb-4 shrink-0">
@@ -652,10 +672,10 @@ export default function PrinciplesSection() {
             </svg>
 
             {/* 2. CENTER COMPLICATION APERTURE: ACTIVE PRINCIPLE READOUT */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
               <div
                 ref={complicationContentRef}
-                className="w-[190px] sm:w-[240px] text-center flex flex-col items-center justify-center px-3 sm:px-4"
+                className="w-[190px] sm:w-[240px] text-center flex flex-col items-center justify-center px-3 sm:px-4 relative z-20"
               >
                 <div className="font-mono text-[9px] sm:text-[11px] tracking-[0.24em] uppercase text-[#8F6B2C] font-semibold mb-0.5 sm:mb-1">
                   PRINCIPLE {PRINCIPLES_DATA[activeIndex].step}
@@ -746,6 +766,53 @@ export default function PrinciplesSection() {
               );
             })}
           </div>
+        </div>
+      </div>
+
+      {/* ── MOBILE & TABLET EDITORIAL CARDS (< 1024px) ─────────────── */}
+      <div className="block lg:hidden mobile-principles-container relative z-10 w-full max-w-2xl mx-auto px-6 sm:px-10 pt-28 sm:pt-32 pb-20 sm:pb-24">
+        {/* Section Header */}
+        <div className="mb-10 sm:mb-12">
+          <div className="flex items-center gap-2 font-mono text-xs tracking-[0.28em] uppercase text-[#C89A3D] font-semibold mb-2">
+            <span className="w-4 h-[1px] bg-[#C89A3D]" />
+            <span>OUR SIGNATURE</span>
+          </div>
+          <h2 className="font-serif text-3xl sm:text-4xl font-light text-[#071A33] tracking-tight leading-tight">
+            The IntrinsQ Principles
+          </h2>
+          <p className="font-sans text-sm sm:text-base text-[#071A33]/70 font-light leading-relaxed mt-2.5">
+            The non-negotiable standards that govern every financial decision and advisory relationship.
+          </p>
+        </div>
+
+        {/* 5 Luxury Principle Cards */}
+        <div className="flex flex-col space-y-5 sm:space-y-6">
+          {PRINCIPLES_DATA.map((p) => (
+            <div
+              key={`mob-p-${p.id}`}
+              className="mobile-principle-card relative bg-[#FAF7F2] border border-[#071A33]/[0.1] border-l-4 border-l-[#C89A3D] p-6 sm:p-7 rounded-2xl shadow-[0_6px_20px_rgba(7,26,51,0.04)]"
+            >
+              {/* Top Metadata Row */}
+              <div className="flex items-center justify-between border-b border-[#071A33]/[0.08] pb-3 mb-4">
+                <span className="font-mono text-[11px] tracking-widest font-semibold text-[#8F6B2C] uppercase">
+                  {p.tag}
+                </span>
+                <span className="font-mono text-xs text-[#071A33]/50">
+                  PRINCIPLE {p.step}
+                </span>
+              </div>
+
+              {/* Short Label */}
+              <h3 className="font-serif text-2xl sm:text-3xl font-medium tracking-tight text-[#071A33] mb-2">
+                {p.shortLabel}
+              </h3>
+
+              {/* Full Text Quote */}
+              <p className="font-serif italic text-base sm:text-lg text-[#C89A3D] font-normal leading-relaxed">
+                “{p.fullText}”
+              </p>
+            </div>
+          ))}
         </div>
       </div>
     </section>

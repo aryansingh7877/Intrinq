@@ -89,7 +89,6 @@ export default function PrecisionStatisticsSection() {
   // Reactive state for UI indicators
   const [activeStation, setActiveStation] = useState<number>(-1);
   const [isCompleted, setIsCompleted] = useState<boolean>(false);
-  const [scrollProgress, setScrollProgress] = useState<number>(0);
 
   // Magnetic cursor quickTo functions for each station
   const quickToMap = useRef<
@@ -204,6 +203,8 @@ export default function PrecisionStatisticsSection() {
         });
 
         // Master ScrollTrigger directly scrubbed with pin
+        let currentStation = -1;
+        let currentCompleted = false;
         ScrollTrigger.create({
           trigger: sectionRef.current,
           start: "top top",
@@ -213,7 +214,6 @@ export default function PrecisionStatisticsSection() {
           anticipatePin: 1,
           onUpdate: (self) => {
             const p = self.progress;
-            setScrollProgress(p);
 
             // 1. Signature Gold Line follows scrub (0 to 100%)
             if (horizontalGoldLineRef.current) {
@@ -318,22 +318,33 @@ export default function PrecisionStatisticsSection() {
               }
             }
 
-            // Determine active station & completion
+            // Determine active station & completion with change guard
+            let nextStation = -1;
+            let nextCompleted = false;
             if (p < 0.12) {
-              setActiveStation(-1);
-              setIsCompleted(false);
+              nextStation = -1;
+              nextCompleted = false;
             } else if (p >= 0.12 && p < 0.38) {
-              setActiveStation(0);
-              setIsCompleted(false);
+              nextStation = 0;
+              nextCompleted = false;
             } else if (p >= 0.38 && p < 0.62) {
-              setActiveStation(1);
-              setIsCompleted(false);
+              nextStation = 1;
+              nextCompleted = false;
             } else if (p >= 0.62 && p < 0.86) {
-              setActiveStation(2);
-              setIsCompleted(false);
+              nextStation = 2;
+              nextCompleted = false;
             } else {
-              setActiveStation(3);
-              setIsCompleted(p >= 0.95);
+              nextStation = 3;
+              nextCompleted = p >= 0.95;
+            }
+
+            if (nextStation !== currentStation) {
+              currentStation = nextStation;
+              setActiveStation(nextStation);
+            }
+            if (nextCompleted !== currentCompleted) {
+              currentCompleted = nextCompleted;
+              setIsCompleted(nextCompleted);
             }
           },
         });
@@ -344,6 +355,9 @@ export default function PrecisionStatisticsSection() {
       // Stacks vertically; vertical line draws downward
       // ==========================================================
       mm.add("(max-width: 1023px)", () => {
+        let currentMobStation = -1;
+        let currentMobCompleted = false;
+
         if (stat1TextRef.current) stat1TextRef.current.textContent = "50+";
         if (stat4TextRef.current) stat4TextRef.current.textContent = "48 hrs";
 
@@ -359,18 +373,28 @@ export default function PrecisionStatisticsSection() {
           scrub: 0.8,
           onUpdate: (self) => {
             const p = self.progress;
-            setScrollProgress(p);
 
             if (verticalGoldLineRef.current) {
               gsap.set(verticalGoldLineRef.current, { scaleY: p });
             }
 
-            if (p < 0.25) setActiveStation(0);
-            else if (p < 0.5) setActiveStation(1);
-            else if (p < 0.75) setActiveStation(2);
+            let nextMobStation = 0;
+            let nextMobCompleted = false;
+            if (p < 0.25) nextMobStation = 0;
+            else if (p < 0.5) nextMobStation = 1;
+            else if (p < 0.75) nextMobStation = 2;
             else {
-              setActiveStation(3);
-              setIsCompleted(p >= 0.9);
+              nextMobStation = 3;
+              nextMobCompleted = p >= 0.9;
+            }
+
+            if (nextMobStation !== currentMobStation) {
+              currentMobStation = nextMobStation;
+              setActiveStation(nextMobStation);
+            }
+            if (nextMobCompleted !== currentMobCompleted) {
+              currentMobCompleted = nextMobCompleted;
+              setIsCompleted(nextMobCompleted);
             }
           },
         });
@@ -907,83 +931,87 @@ export default function PrecisionStatisticsSection() {
         </div>
 
         {/* ======================================================== */}
-        {/* MOBILE VERTICAL FEED (< 1024px)                          */}
+        {/* MOBILE VERTICAL FEED (< 1024px) — CENTERED TIMELINE      */}
         {/* ======================================================== */}
-        <div className="lg:hidden relative pl-8 sm:pl-10 space-y-12 sm:space-y-14 py-4">
-          {/* Vertical Background Line Track */}
-          <div className="absolute left-2.5 top-2 bottom-2 w-[1.5px] bg-[#071A33]/10 pointer-events-none" />
+        <div className="lg:hidden relative max-w-md mx-auto py-6 space-y-14 sm:space-y-16 text-center">
+          {/* Vertical Background Line Track Centered */}
+          <div className="absolute left-1/2 -translate-x-1/2 top-4 bottom-4 w-[1.5px] bg-[#071A33]/10 pointer-events-none z-0" />
 
-          {/* Vertical Active Gold Precision Line */}
+          {/* Vertical Active Gold Precision Line Centered */}
           <div
             ref={verticalGoldLineRef}
-            className="absolute left-2.5 top-2 bottom-2 w-[1.5px] bg-[#C89A3D] pointer-events-none"
+            className="absolute left-1/2 -translate-x-1/2 top-4 bottom-4 w-[1.5px] bg-[#C89A3D] pointer-events-none z-0"
             style={{
-              boxShadow: "0 0 8px rgba(200, 154, 61, 0.4)",
+              boxShadow: "0 0 10px rgba(200, 154, 61, 0.5)",
             }}
           />
 
           {/* Mobile Stat 01 */}
-          <div className="relative">
-            <div className="absolute -left-8 sm:-left-10 top-2 w-3.5 h-3.5 rounded-full border border-[#C89A3D] bg-[#F4EFE5] flex items-center justify-center -translate-x-[0.5px]">
+          <div className="relative z-10 flex flex-col items-center">
+            {/* Centered Node */}
+            <div className="w-4 h-4 rounded-full border border-[#C89A3D] bg-[#F4EFE5] flex items-center justify-center shadow-sm mb-3">
               <div className="w-1.5 h-1.5 rounded-full bg-[#C89A3D]" />
             </div>
-            <span className="font-mono text-[10.5px] tracking-[0.2em] uppercase text-[#8F6B2C] font-semibold">
+            <span className="font-mono text-[11px] tracking-[0.22em] uppercase text-[#8F6B2C] font-semibold bg-[#F4EFE5] px-3.5 py-0.5 rounded-full">
               01
             </span>
-            <div className="mt-2 font-serif text-5xl sm:text-6xl font-light text-[#071A33] leading-none">
-              <span ref={stat1TextRef}>50+</span>
+            <div className="mt-2 font-serif text-5xl sm:text-6xl font-light text-[#071A33] leading-none bg-[#F4EFE5] px-4 py-0.5">
+              <span>50+</span>
             </div>
-            <p className="mt-2 font-sans text-sm tracking-wider uppercase font-semibold text-[#071A33]/80">
+            <p className="mt-2 font-sans text-xs sm:text-sm tracking-wider uppercase font-semibold text-[#071A33]/80 bg-[#F4EFE5] px-3">
               Businesses Supported
             </p>
           </div>
 
           {/* Mobile Stat 02 */}
-          <div className="relative">
-            <div className="absolute -left-8 sm:-left-10 top-2 w-3.5 h-3.5 rounded-full border border-[#C89A3D] bg-[#F4EFE5] flex items-center justify-center -translate-x-[0.5px]">
+          <div className="relative z-10 flex flex-col items-center">
+            {/* Centered Node */}
+            <div className="w-4 h-4 rounded-full border border-[#C89A3D] bg-[#F4EFE5] flex items-center justify-center shadow-sm mb-3">
               <div className="w-1.5 h-1.5 rounded-full bg-[#C89A3D]" />
             </div>
-            <span className="font-mono text-[10.5px] tracking-[0.2em] uppercase text-[#8F6B2C] font-semibold">
+            <span className="font-mono text-[11px] tracking-[0.22em] uppercase text-[#8F6B2C] font-semibold bg-[#F4EFE5] px-3.5 py-0.5 rounded-full">
               02
             </span>
-            <div className="mt-2 font-serif text-5xl sm:text-6xl font-light text-[#071A33] leading-none flex items-baseline">
-              <span ref={stat2SymRef} className="text-[#C89A3D]">₹</span>
-              <span ref={stat2NumRef}>500</span>
-              <span ref={stat2SufRef} className="text-3xl italic text-[#8F6B2C] ml-1">Cr+</span>
+            <div className="mt-2 font-serif text-5xl sm:text-6xl font-light text-[#071A33] leading-none flex items-baseline justify-center bg-[#F4EFE5] px-4 py-0.5">
+              <span className="text-[#C89A3D]">₹</span>
+              <span>500</span>
+              <span className="text-3xl italic text-[#8F6B2C] ml-1">Cr+</span>
             </div>
-            <p className="mt-2 font-sans text-sm tracking-wider uppercase font-semibold text-[#071A33]/80">
+            <p className="mt-2 font-sans text-xs sm:text-sm tracking-wider uppercase font-semibold text-[#071A33]/80 bg-[#F4EFE5] px-3">
               Financial Oversight
             </p>
           </div>
 
           {/* Mobile Stat 03 */}
-          <div className="relative">
-            <div className="absolute -left-8 sm:-left-10 top-2 w-3.5 h-3.5 rounded-full border border-[#C89A3D] bg-[#F4EFE5] flex items-center justify-center -translate-x-[0.5px]">
+          <div className="relative z-10 flex flex-col items-center">
+            {/* Centered Node */}
+            <div className="w-4 h-4 rounded-full border border-[#C89A3D] bg-[#F4EFE5] flex items-center justify-center shadow-sm mb-3">
               <div className="w-1.5 h-1.5 rounded-full bg-[#C89A3D]" />
             </div>
-            <span className="font-mono text-[10.5px] tracking-[0.2em] uppercase text-[#8F6B2C] font-semibold">
+            <span className="font-mono text-[11px] tracking-[0.22em] uppercase text-[#8F6B2C] font-semibold bg-[#F4EFE5] px-3.5 py-0.5 rounded-full">
               03
             </span>
-            <div className="mt-2 font-serif text-5xl sm:text-6xl font-light text-[#071A33] leading-none">
-              <span ref={stat3TextRef}>15+</span>
+            <div className="mt-2 font-serif text-5xl sm:text-6xl font-light text-[#071A33] leading-none bg-[#F4EFE5] px-4 py-0.5">
+              <span>15+</span>
             </div>
-            <p className="mt-2 font-sans text-sm tracking-wider uppercase font-semibold text-[#071A33]/80">
+            <p className="mt-2 font-sans text-xs sm:text-sm tracking-wider uppercase font-semibold text-[#071A33]/80 bg-[#F4EFE5] px-3">
               Years of Experience
             </p>
           </div>
 
           {/* Mobile Stat 04 */}
-          <div className="relative">
-            <div className="absolute -left-8 sm:-left-10 top-2 w-3.5 h-3.5 rounded-full border border-[#C89A3D] bg-[#F4EFE5] flex items-center justify-center -translate-x-[0.5px]">
+          <div className="relative z-10 flex flex-col items-center">
+            {/* Centered Node */}
+            <div className="w-4 h-4 rounded-full border border-[#C89A3D] bg-[#F4EFE5] flex items-center justify-center shadow-sm mb-3">
               <div className="w-1.5 h-1.5 rounded-full bg-[#C89A3D]" />
             </div>
-            <span className="font-mono text-[10.5px] tracking-[0.2em] uppercase text-[#8F6B2C] font-semibold">
+            <span className="font-mono text-[11px] tracking-[0.22em] uppercase text-[#8F6B2C] font-semibold bg-[#F4EFE5] px-3.5 py-0.5 rounded-full">
               04
             </span>
-            <div className="mt-2 font-serif text-5xl sm:text-6xl font-light text-[#071A33] leading-none">
-              <span ref={stat4TextRef}>48 hrs</span>
+            <div className="mt-2 font-serif text-5xl sm:text-6xl font-light text-[#071A33] leading-none bg-[#F4EFE5] px-4 py-0.5">
+              <span>48 hrs</span>
             </div>
-            <p className="mt-2 font-sans text-sm tracking-wider uppercase font-semibold text-[#071A33]/80">
+            <p className="mt-2 font-sans text-xs sm:text-sm tracking-wider uppercase font-semibold text-[#071A33]/80 bg-[#F4EFE5] px-3">
               Reporting Turnaround
             </p>
           </div>

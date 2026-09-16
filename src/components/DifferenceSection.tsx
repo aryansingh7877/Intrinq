@@ -117,38 +117,62 @@ export default function DifferenceSection() {
           "-=0.5"
         );
 
-      // 2. Scroll-driven timeline progress with pinning for the journey feel
-      const timelineTl = gsap.timeline({
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top top",
-          end: "+=100%",
-          pin: true,
-          scrub: 0.8,
-          anticipatePin: 1,
-          onUpdate: (self) => {
-            const p = self.progress;
-            // Determine active step index based on progress
-            if (p < 0.2) {
-              setActiveStepIndex(0);
-            } else if (p < 0.45) {
-              setActiveStepIndex(1);
-            } else if (p < 0.7) {
-              setActiveStepIndex(2);
-            } else if (p < 0.9) {
-              setActiveStepIndex(3);
-            } else {
-              setActiveStepIndex(4);
-            }
+      // 2. Desktop-only scroll-driven timeline progress with pinning
+      const mm = gsap.matchMedia();
+
+      mm.add("(min-width: 1024px)", () => {
+        let currentIdx = -1;
+        const timelineTl = gsap.timeline({
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top top",
+            end: "+=100%",
+            pin: true,
+            scrub: 0.8,
+            anticipatePin: 1,
+            onUpdate: (self) => {
+              const p = self.progress;
+              let nextIdx = 0;
+              if (p < 0.2) nextIdx = 0;
+              else if (p < 0.45) nextIdx = 1;
+              else if (p < 0.7) nextIdx = 2;
+              else if (p < 0.9) nextIdx = 3;
+              else nextIdx = 4;
+
+              if (nextIdx !== currentIdx) {
+                currentIdx = nextIdx;
+                setActiveStepIndex(nextIdx);
+              }
+            },
           },
-        },
+        });
+
+        timelineTl.to(progressLineRef.current, {
+          scaleX: 1,
+          ease: "none",
+          duration: 1,
+        });
       });
 
-      // Progressively animate the gold connecting line across the 5 nodes
-      timelineTl.to(progressLineRef.current, {
-        scaleX: 1,
-        ease: "none",
-        duration: 1,
+      mm.add("(max-width: 1023px)", () => {
+        const cards = containerRef.current?.querySelectorAll(".mobile-diff-card");
+        if (cards && cards.length > 0) {
+          gsap.fromTo(
+            cards,
+            { opacity: 0, y: 24 },
+            {
+              opacity: 1,
+              y: 0,
+              duration: 0.6,
+              stagger: 0.12,
+              ease: "power2.out",
+              scrollTrigger: {
+                trigger: containerRef.current?.querySelector(".mobile-diff-track"),
+                start: "top 85%",
+              },
+            }
+          );
+        }
       });
     }, sectionRef);
 
@@ -160,7 +184,7 @@ export default function DifferenceSection() {
       ref={sectionRef}
       id="approach"
       aria-label="The IntrinsQ Difference and Process"
-      className="relative w-full min-h-screen bg-[#071A33] text-[#F4EFE5] py-28 sm:py-36 md:py-40 px-6 sm:px-10 md:px-16 lg:px-24 flex flex-col justify-center overflow-hidden transition-colors duration-700 select-none scroll-mt-24"
+      className="relative w-full min-h-screen bg-[#071A33] text-[#F4EFE5] pt-28 pb-16 sm:py-36 md:py-40 px-6 sm:px-10 md:px-16 lg:px-24 flex flex-col justify-start lg:justify-center overflow-hidden transition-colors duration-700 select-none scroll-mt-28"
     >
       <div id="difference" className="absolute top-0 pointer-events-none" />
       {/* Background ultra-subtle architectural grid */}
@@ -186,7 +210,7 @@ export default function DifferenceSection() {
         {/* ========================================================== */}
         {/* 1. UPPER EDITORIAL CONTENT                                 */}
         {/* ========================================================== */}
-        <div className="max-w-3xl mb-20 sm:mb-24 md:mb-28">
+        <div className="max-w-3xl mb-10 sm:mb-16 lg:mb-28">
           {/* Eyebrow */}
           <div className="flex items-center space-x-3 mb-5 md:mb-6">
             <span
@@ -224,9 +248,9 @@ export default function DifferenceSection() {
         </div>
 
         {/* ========================================================== */}
-        {/* 2. FIVE-STEP HORIZONTAL PROCESS TIMELINE                   */}
+        {/* 2. FIVE-STEP HORIZONTAL PROCESS TIMELINE (Desktop >= 1024px) */}
         {/* ========================================================== */}
-        <div className="relative w-full pt-8 pb-12">
+        <div className="hidden lg:block relative w-full pt-8 pb-12">
           {/* Full-width baseline inactive track line — perfectly centered with circular nodes */}
           <div className="absolute top-[88px] sm:top-[92px] md:top-[96px] left-[10%] right-[10%] h-[1.5px] bg-white/[0.12] pointer-events-none z-0" />
 
@@ -309,6 +333,41 @@ export default function DifferenceSection() {
               );
             })}
           </div>
+        </div>
+
+        {/* ========================================================== */}
+        {/* 3. MOBILE & TABLET EDITORIAL VERTICAL FLOW (< 1024px)      */}
+        {/* ========================================================== */}
+        <div className="block lg:hidden mobile-diff-track w-full space-y-4 sm:space-y-5 pt-2 pb-6">
+          {STEPS.map((step) => {
+            const Icon = step.icon;
+            return (
+              <div
+                key={`mob-${step.id}`}
+                className="mobile-diff-card relative flex items-start gap-4 p-5 sm:p-6 rounded-2xl bg-[#091F3D]/60 border border-white/[0.1] backdrop-blur-md transition-all duration-300 hover:border-[#C89A3D]/40 shadow-sm"
+              >
+                {/* Left: Step Number & Circular Icon */}
+                <div className="flex flex-col items-center shrink-0">
+                  <span className="font-mono text-xs font-semibold tracking-widest text-[#C89A3D] mb-2">
+                    {step.id}
+                  </span>
+                  <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-[#050F20] border border-[#C89A3D]/40 flex items-center justify-center shadow-inner">
+                    <Icon className="w-5 h-5 text-[#C89A3D]" />
+                  </div>
+                </div>
+
+                {/* Right: Title & Description */}
+                <div className="flex-1 pt-1">
+                  <h3 className="font-serif text-xl sm:text-2xl text-[#F4EFE5] font-normal tracking-tight mb-1.5">
+                    {step.title}
+                  </h3>
+                  <p className="font-sans text-sm sm:text-[15px] text-[#F4EFE5]/70 font-light leading-relaxed">
+                    {step.description}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>

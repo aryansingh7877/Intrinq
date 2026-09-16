@@ -35,12 +35,13 @@ export default function WebGLWorld() {
     });
 
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.2 : 1.6));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1.0 : 1.5));
     renderer.setClearColor(0x000000, 0); // Transparent background
     container.appendChild(renderer.domElement);
 
     // ── 2. CIRCULAR GLOWING STARDUST PARTICLES ─────────────────────
-    const particleCount = isMobile ? 550 : 1800;
+    // The visual density is preserved while avoiding unnecessary GPU/main-thread work.
+    const particleCount = isMobile ? 420 : 1100;
     const geometry = new THREE.BufferGeometry();
     const positions = new Float32Array(particleCount * 3);
     const colors = new Float32Array(particleCount * 3);
@@ -150,6 +151,7 @@ export default function WebGLWorld() {
     let targetCameraY = 0;
     let targetCameraZ = 45;
     let isPageVisible = true;
+    let isHeroVisible = true;
     let animId: number;
 
     const onMouseMove = (e: MouseEvent) => {
@@ -182,6 +184,24 @@ export default function WebGLWorld() {
     };
     document.addEventListener("visibilitychange", onVisibilityChange);
 
+    // The canvas sits behind the whole page but is only visible during the hero.
+    // Stop rendering while later opaque sections are on screen.
+    const heroObserver = new IntersectionObserver(
+      ([entry]) => {
+        isHeroVisible = entry.isIntersecting;
+      },
+      { threshold: 0.01 }
+    );
+    const heroEl = document.getElementById("hero") || document.querySelector("main");
+    if (heroEl) {
+      heroObserver.observe(heroEl);
+    } else {
+      setTimeout(() => {
+        const h = document.getElementById("hero") || document.querySelector("main");
+        if (h) heroObserver.observe(h);
+      }, 300);
+    }
+
     // Resize handler
     const onResize = () => {
       camera.aspect = window.innerWidth / window.innerHeight;
@@ -193,10 +213,13 @@ export default function WebGLWorld() {
     // ── 5. MAIN RENDER LOOP (60 FPS OPTIMIZED) ─────────────────────
     let clock = new THREE.Clock();
 
-    const animate = () => {
+    let lastRender = 0;
+    const animate = (time: number) => {
       animId = requestAnimationFrame(animate);
 
-      if (!isPageVisible) return;
+      // Capping this decorative scene at 30fps is visually smooth while halving its cost.
+      if (!isPageVisible || !isHeroVisible || time - lastRender < 33) return;
+      lastRender = time;
 
       const elapsedTime = clock.getElapsedTime();
 
@@ -228,7 +251,7 @@ export default function WebGLWorld() {
       renderer.render(scene, camera);
     };
 
-    animate();
+    animate(performance.now());
 
     // ── 6. CLEANUP ON UNMOUNT ──────────────────────────────────────
     return () => {
@@ -237,6 +260,7 @@ export default function WebGLWorld() {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onResize);
       document.removeEventListener("visibilitychange", onVisibilityChange);
+      heroObserver?.disconnect();
 
       geometry.dispose();
       particleMaterial.dispose();
