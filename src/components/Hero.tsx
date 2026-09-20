@@ -336,9 +336,9 @@ export default function Hero() {
       <div className="absolute inset-0 pointer-events-none grain-overlay z-10" />
 
       {/* ========================================================== */}
-      {/* 3. TOP FIXED HEADER (Logo & Minimal Triad)                 */}
+      {/* 3. TOP FIXED HEADER (Logo & Minimal Triad - Desktop)       */}
       {/* ========================================================== */}
-      <header className="absolute top-0 left-0 w-full z-30 px-6 sm:px-10 md:px-16 pt-7 md:pt-8 flex items-center justify-between pointer-events-auto">
+      <header className="hidden md:flex absolute top-0 left-0 w-full z-30 px-6 sm:px-10 md:px-16 pt-7 md:pt-8 items-center justify-between pointer-events-auto">
         {/* Official IntrinsQ Logo at Top-Left (Ivory & Gold for dark backgrounds) */}
         <div ref={logoRef} className="relative flex items-center">
           <Link
@@ -380,7 +380,7 @@ export default function Hero() {
       {/* ========================================================== */}
       {/* 4. MAIN HERO CONTENT (Guaranteed clearance below logo)     */}
       {/* ========================================================== */}
-      <div className="relative z-20 w-full h-full flex flex-col justify-start px-6 sm:px-10 md:px-16 lg:px-20 pt-28 sm:pt-32 md:pt-36 lg:pt-40 pb-36 sm:pb-32 md:pb-28">
+      <div className="relative z-20 w-full h-full flex flex-col justify-start px-[18px] sm:px-8 md:px-16 lg:px-20 pt-28 xs:pt-32 sm:pt-36 md:pt-36 lg:pt-40 pb-16 sm:pb-20 md:pb-28">
         <div ref={contentWrapperRef} className="max-w-xl md:max-w-2xl lg:max-w-[740px] will-change-transform">
           {/* Eyebrow with gold accent line */}
           <div className="flex items-center space-x-3.5 mb-4 sm:mb-5 md:mb-6">
@@ -397,18 +397,18 @@ export default function Hero() {
           </div>
 
           {/* Large High-Contrast Editorial Headline */}
-          <h1 className="font-serif text-[2.5rem] sm:text-5xl md:text-6xl lg:text-[4.75rem] xl:text-[5.2rem] font-normal leading-[1.08] tracking-[-0.015em] text-[#FCFAF7] mb-4 sm:mb-5 md:mb-6">
-            <span className="block overflow-hidden pb-2 sm:pb-3">
+          <h1 className="font-serif text-[clamp(2.7rem,11vw,4.5rem)] md:text-6xl lg:text-[4.75rem] xl:text-[5.2rem] font-normal leading-[0.98] md:leading-[1.04] tracking-[-0.02em] text-[#FCFAF7] mb-5 sm:mb-6 md:mb-7 [overflow-wrap:normal] [word-break:normal] [hyphens:none]">
+            <span className="block overflow-hidden pb-1.5 sm:pb-3">
               <span ref={headlineLine1Ref} className="block will-change-transform pb-1">
                 Strategic Financial
               </span>
             </span>
-            <span className="block overflow-hidden pb-2 sm:pb-3">
+            <span className="block overflow-hidden pb-1.5 sm:pb-3">
               <span ref={headlineLine2Ref} className="block will-change-transform pb-1">
                 Advice That
               </span>
             </span>
-            <span className="block overflow-hidden pb-4 -mb-2">
+            <span className="block overflow-hidden pb-3 sm:pb-4 -mb-2">
               <span
                 ref={headlineLine3Ref}
                 className="inline-block font-serif italic font-normal text-gold-metallic tracking-normal pr-3 pb-2 will-change-transform"
@@ -421,7 +421,7 @@ export default function Hero() {
           {/* Supporting paragraph */}
           <p
             ref={paragraphRef}
-            className="text-sm sm:text-base md:text-[17px] text-ivory-200/80 font-sans font-light leading-relaxed max-w-lg md:max-w-xl mb-6 md:mb-8 text-balance"
+            className="text-[15px] sm:text-base md:text-[17px] text-ivory-200/80 font-sans font-light leading-[1.6] max-w-[340px] sm:max-w-lg md:max-w-xl mb-7 md:mb-8 text-balance [overflow-wrap:normal] [word-break:normal] [hyphens:none]"
           >
             AI handles the routine. We handle the decisions that shape your
             business — clarity, strategy, and discipline from a single advisory

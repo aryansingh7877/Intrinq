@@ -31,6 +31,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   themeColor: "#060B11",
+  viewportFit: "cover",
 };
 
 import dynamic from "next/dynamic";

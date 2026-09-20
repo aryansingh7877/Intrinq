@@ -10,11 +10,12 @@ export default function MagneticCursor() {
   const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
-    // Only enable on desktop pointer devices
+    // Only enable on desktop pointer devices with screen width >= 768px
     const isTouch = window.matchMedia("(pointer: coarse)").matches;
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const isMobileScreen = window.innerWidth < 768 || window.matchMedia("(max-width: 767px)").matches;
 
-    if (isTouch || prefersReducedMotion) return;
+    if (isTouch || prefersReducedMotion || isMobileScreen) return;
 
     setIsVisible(true);
 
@@ -48,7 +49,16 @@ export default function MagneticCursor() {
       setIsVisible(true);
     };
 
+    const onResize = () => {
+      if (window.innerWidth < 768) {
+        setIsVisible(false);
+      } else if (!isTouch && !prefersReducedMotion) {
+        setIsVisible(true);
+      }
+    };
+
     window.addEventListener("mousemove", onMouseMove, { passive: true });
+    window.addEventListener("resize", onResize, { passive: true });
     document.addEventListener("mouseleave", onMouseLeave);
     document.addEventListener("mouseenter", onMouseEnter);
 
@@ -69,6 +79,7 @@ export default function MagneticCursor() {
     return () => {
       cancelAnimationFrame(animId);
       window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("resize", onResize);
       document.removeEventListener("mouseleave", onMouseLeave);
       document.removeEventListener("mouseenter", onMouseEnter);
     };
@@ -81,13 +92,13 @@ export default function MagneticCursor() {
       {/* Precision Center Pip */}
       <div
         ref={dotRef}
-        className="fixed top-0 left-0 w-1.5 h-1.5 -ml-[3px] -mt-[3px] bg-[#C89A3D] rounded-full pointer-events-none z-[9999] transition-opacity duration-200 will-change-transform"
+        className="hidden md:block fixed top-0 left-0 w-1.5 h-1.5 -ml-[3px] -mt-[3px] bg-[#C89A3D] rounded-full pointer-events-none z-[9999] transition-opacity duration-200 will-change-transform"
       />
 
       {/* Lagging Precision Aura Ring */}
       <div
         ref={ringRef}
-        className={`fixed top-0 left-0 rounded-full pointer-events-none z-[9998] transition-[width,height,margin,border-color,background-color] duration-300 ease-out will-change-transform ${
+        className={`hidden md:block fixed top-0 left-0 rounded-full pointer-events-none z-[9998] transition-[width,height,margin,border-color,background-color] duration-300 ease-out will-change-transform ${
           isHovered
             ? "w-12 h-12 -ml-6 -mt-6 border border-[#C89A3D]/80 bg-[#C89A3D]/10 backdrop-blur-[1px] shadow-[0_0_15px_rgba(200,154,61,0.35)]"
             : "w-7 h-7 -ml-3.5 -mt-3.5 border border-[#C89A3D]/35 bg-transparent"

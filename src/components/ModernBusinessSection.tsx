@@ -146,7 +146,7 @@ export default function ModernBusinessSection() {
       ref={sectionRef}
       id="about"
       aria-label="The Modern Business Problem Space"
-      className="relative w-full bg-[#F5F1E8] text-[#071A33] py-28 sm:py-36 md:py-44 px-6 sm:px-10 md:px-16 lg:px-24 transition-colors duration-700 scroll-mt-24"
+      className="relative w-full bg-[#F5F1E8] text-[#071A33] pt-[72px] pb-[80px] px-[18px] sm:py-36 sm:px-10 md:py-44 md:px-16 lg:px-24 transition-colors duration-700 scroll-mt-24"
     >
       <div id="modern-business" className="absolute top-0 pointer-events-none" />
       {/* Subtle architectural baseline grid lines (ultra-refined luxury texture) */}
@@ -159,7 +159,7 @@ export default function ModernBusinessSection() {
         }}
       />
 
-      <div className="relative z-10 max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-14 lg:gap-16">
+      <div className="relative z-10 max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-12 sm:gap-14 lg:gap-16">
         {/* ========================================================== */}
         {/* LEFT COLUMN (~44%) — Centered with Point 02                */}
         {/* ========================================================== */}
@@ -168,22 +168,22 @@ export default function ModernBusinessSection() {
           className="w-full lg:w-[44%] self-center"
         >
           {/* Eyebrow */}
-          <div className="flex items-center space-x-3 mb-6 md:mb-8">
+          <div className="flex items-center space-x-3 mb-5 sm:mb-6 md:mb-8">
             <span
               ref={eyebrowLineRef}
-              className="h-[1.5px] w-9 bg-[#C89A3D] rounded-full inline-block"
+              className="h-[1.5px] w-8 sm:w-9 bg-[#C89A3D] rounded-full inline-block"
             />
             <span
               ref={eyebrowTextRef}
-              className="text-xs sm:text-[13px] tracking-[0.26em] uppercase font-mono font-semibold text-[#8F6B2C]"
+              className="text-[11.5px] tracking-[0.26em] uppercase font-mono font-semibold text-[#8F6B2C]"
             >
               THE MODERN BUSINESS
             </span>
           </div>
 
           {/* Large Editorial Heading */}
-          <h2 className="font-serif text-[2.2rem] sm:text-4xl md:text-[2.8rem] lg:text-[3.1rem] xl:text-[3.4rem] font-normal leading-[1.18] tracking-[-0.015em] text-[#071A33] mb-7 md:mb-9">
-            <span className="block overflow-hidden pb-2 sm:pb-3">
+          <h2 className="font-serif text-[clamp(2.6rem,10vw,4rem)] md:text-[2.8rem] lg:text-[3.1rem] xl:text-[3.4rem] font-normal leading-[1.02] md:leading-[1.18] tracking-[-0.015em] text-[#071A33] mb-6 md:mb-9 max-w-[350px] lg:max-w-none [overflow-wrap:normal] [word-break:normal] [hyphens:none]">
+            <span className="block overflow-hidden pb-1.5 sm:pb-3">
               <span
                 ref={(el) => {
                   if (el) headlineLinesRef.current[0] = el;
@@ -193,7 +193,7 @@ export default function ModernBusinessSection() {
                 Running a business
               </span>
             </span>
-            <span className="block overflow-hidden pb-2 sm:pb-3">
+            <span className="block overflow-hidden pb-1.5 sm:pb-3">
               <span
                 ref={(el) => {
                   if (el) headlineLinesRef.current[1] = el;
@@ -203,7 +203,7 @@ export default function ModernBusinessSection() {
                 shouldn&apos;t mean
               </span>
             </span>
-            <span className="block overflow-hidden pb-5 -mb-3">
+            <span className="block overflow-hidden pb-4 sm:pb-5 -mb-3">
               <span
                 ref={(el) => {
                   if (el) headlineLinesRef.current[2] = el;
@@ -221,7 +221,7 @@ export default function ModernBusinessSection() {
           {/* Supporting Paragraph */}
           <p
             ref={paragraphRef}
-            className="text-base sm:text-lg md:text-[18px] text-[#071A33]/75 font-sans font-light leading-relaxed max-w-md text-balance"
+            className="text-[16px] sm:text-lg md:text-[18px] text-[#071A33]/75 font-sans font-light leading-[1.65] max-w-[350px] md:max-w-md text-balance [overflow-wrap:normal] [word-break:normal] [hyphens:none]"
           >
             Most growing companies operate on lagging information and fragmented
             advice. By the time the picture is clear, the decision has already
