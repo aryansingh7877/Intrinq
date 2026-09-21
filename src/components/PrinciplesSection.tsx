@@ -675,7 +675,7 @@ export default function PrinciplesSection() {
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
               <div
                 ref={complicationContentRef}
-                className="w-[190px] sm:w-[240px] text-center flex flex-col items-center justify-center px-3 sm:px-4 relative z-20"
+                className="w-[190px] sm:w-[240px] text-center flex flex-col items-center justify-center px-3 sm:px-4 py-2 sm:py-3 relative z-20 bg-[#F5F1E8]/70 backdrop-blur-[5px] rounded-xl shadow-[0_0_24px_rgba(245,241,232,0.9)]"
               >
                 <div className="font-mono text-[9px] sm:text-[11px] tracking-[0.24em] uppercase text-[#8F6B2C] font-semibold mb-0.5 sm:mb-1">
                   PRINCIPLE {PRINCIPLES_DATA[activeIndex].step}
